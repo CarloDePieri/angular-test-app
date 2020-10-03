@@ -15,7 +15,7 @@
       <ul class="dropdown-menu">
         <li><a (click)="addIngredients()" appCursorPointer>Add ingredients to shopping list</a></li>
         <li><a routerLink="edit" appCursorPointer>Edit Recipe</a></li>
-        <li><a appCursorPointer>Delete Recipe</a></li>
+        <li><a appCursorPointer (click)="deleteRecipe()">Delete Recipe</a></li>
       </ul>
     </div>
   </div>
