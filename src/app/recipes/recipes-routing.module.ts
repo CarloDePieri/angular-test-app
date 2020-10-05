@@ -10,7 +10,7 @@ import { AuthGuard } from '../auth/auth/auth-guard';
 
 const routes: Routes = [
   {
-    path: 'recipes',
+    path: '', // lazy-loading /recipes
     component: RecipesComponent,
     canActivate: [AuthGuard],
     children: [

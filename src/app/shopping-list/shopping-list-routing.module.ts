@@ -5,7 +5,7 @@ import { AuthGuard } from '../auth/auth/auth-guard';
 
 const routes: Routes = [
   {
-    path: 'shopping',
+    path: '', // lazy loading /shopping
     canActivate: [AuthGuard],
     component: ShoppingListComponent,
   },
