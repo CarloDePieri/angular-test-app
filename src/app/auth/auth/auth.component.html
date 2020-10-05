@@ -1,6 +1,8 @@
 <div class="row">
   <div class="col-xs-12 col-md-6 col-md-offset-3">
-    <div class="alert alert-danger" *ngIf="error"><strong>Error: </strong>{{ error }}</div>
+    <!-- <div class="alert alert-danger" *ngIf="error"><strong>Error: </strong>{{ error }}</div> -->
+    <!-- <app-alert [message]="error" *ngIf="error" (close)="error = null"></app-alert> -->
+    <ng-template appPlaceholder #placeholder></ng-template>
     <app-loading-spinner *ngIf="isLoading; else f"></app-loading-spinner>
     <ng-template #f>
       <form [formGroup]="credForm" (ngSubmit)="onSubmit()">
