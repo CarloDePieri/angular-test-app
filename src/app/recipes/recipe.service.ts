@@ -3,6 +3,18 @@ import { Recipe } from './recipe.model';
 import { Ingredient } from '../shared/ingredient.model';
 import { Subject } from 'rxjs';
 
+export type RecipeData = {
+  name: string;
+  description: string;
+  imagePath: string;
+  ingredients?: Array<IngredientData>;
+};
+
+type IngredientData = {
+  name: string;
+  amount: number;
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -19,26 +31,36 @@ export class RecipeService {
 
   recipeListChanged = new Subject<Recipe[]>();
 
-  private recipes: Recipe[] = [
-    new Recipe(
-      'A test recipe 1',
-      'simply a test',
-      'https://www.telegraph.co.uk/content/dam/food-and-drink/2019/01/11/TELEMMGLPICT000185036503_trans_NvBQzQNjv4BqodXSHHE-j78vyZ0iwRUmY_nuzprQ_mxVCWqrJBTJk3A.jpeg',
-      [new Ingredient('bread', 1), new Ingredient('flour', 1)]
-    ),
-    new Recipe(
-      'A test recipe 2',
-      'simply a test',
-      'https://www.telegraph.co.uk/content/dam/food-and-drink/2019/01/11/TELEMMGLPICT000185036503_trans_NvBQzQNjv4BqodXSHHE-j78vyZ0iwRUmY_nuzprQ_mxVCWqrJBTJk3A.jpeg',
-      [new Ingredient('salt', 2), new Ingredient('mango', 2)]
-    ),
-    new Recipe(
-      'A test recipe 3',
-      'simply a test',
-      'https://www.telegraph.co.uk/content/dam/food-and-drink/2019/01/11/TELEMMGLPICT000185036503_trans_NvBQzQNjv4BqodXSHHE-j78vyZ0iwRUmY_nuzprQ_mxVCWqrJBTJk3A.jpeg',
-      [new Ingredient('pepper', 3), new Ingredient('strawberries', 3)]
-    ),
-  ];
+  loadRecipes(recipesData: [RecipeData]) {
+    this.recipes = [];
+    recipesData.forEach((recipeData: RecipeData) => {
+      let recipe = this.newRecipeFromData(recipeData);
+      this.recipes.push(recipe);
+    });
+    this.recipeListChanged.next(this.getRecipes());
+  }
+
+  private recipes: Recipe[] = [];
+  // private recipes: Recipe[] = [
+  //   new Recipe(
+  //     'A test recipe 1',
+  //     'simply a test',
+  //     'https://www.telegraph.co.uk/content/dam/food-and-drink/2019/01/11/TELEMMGLPICT000185036503_trans_NvBQzQNjv4BqodXSHHE-j78vyZ0iwRUmY_nuzprQ_mxVCWqrJBTJk3A.jpeg',
+  //     [new Ingredient('bread', 1), new Ingredient('flour', 1)]
+  //   ),
+  //   new Recipe(
+  //     'A test recipe 2',
+  //     'simply a test',
+  //     'https://www.telegraph.co.uk/content/dam/food-and-drink/2019/01/11/TELEMMGLPICT000185036503_trans_NvBQzQNjv4BqodXSHHE-j78vyZ0iwRUmY_nuzprQ_mxVCWqrJBTJk3A.jpeg',
+  //     [new Ingredient('salt', 2), new Ingredient('mango', 2)]
+  //   ),
+  //   new Recipe(
+  //     'A test recipe 3',
+  //     'simply a test',
+  //     'https://www.telegraph.co.uk/content/dam/food-and-drink/2019/01/11/TELEMMGLPICT000185036503_trans_NvBQzQNjv4BqodXSHHE-j78vyZ0iwRUmY_nuzprQ_mxVCWqrJBTJk3A.jpeg',
+  //     [new Ingredient('pepper', 3), new Ingredient('strawberries', 3)]
+  //   ),
+  // ];
 
   constructor() {}
 
@@ -50,28 +72,18 @@ export class RecipeService {
     return this.recipes[id];
   }
 
-  newRecipeFromData(data: {
-    name: string;
-    description: string;
-    imagePath: string;
-    ingredients: Array<{ name: string; amount: number }>;
-  }): Recipe {
+  newRecipeFromData(data: RecipeData): Recipe {
     return new Recipe(
       data.name,
       data.description,
       data.imagePath,
-      data.ingredients.map((data) => {
+      data.ingredients.map((data: IngredientData) => {
         return new Ingredient(data.name, data.amount);
       })
     );
   }
 
-  addRecipeFromData(data: {
-    name: string;
-    description: string;
-    imagePath: string;
-    ingredients: Array<{ name: string; amount: number }>;
-  }) {
+  addRecipeFromData(data: RecipeData) {
     const recipe = this.newRecipeFromData(data);
     this.recipes.push(recipe);
     this.recipeListChanged.next(this.getRecipes());
