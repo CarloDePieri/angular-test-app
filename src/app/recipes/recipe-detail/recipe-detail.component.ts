@@ -1,9 +1,11 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Recipe } from '../recipe.model';
 import { RecipeService } from '../recipe.service';
-import { ShoppingListService } from 'src/app/shopping-list/shopping-list.service';
 import { Ingredient } from 'src/app/shared/ingredient.model';
-import { ActivatedRoute, Data, Params, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import * as SLActions from '../../shopping-list/store/shopping-list.actions';
+import * as fromShoppingList from 'src/app/shopping-list/store/shopping-list.reducer';
 
 @Component({
   selector: 'app-recipe-detail',
@@ -16,9 +18,9 @@ export class RecipeDetailComponent implements OnInit {
 
   constructor(
     private recipeService: RecipeService,
-    private shoppingListService: ShoppingListService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private store: Store<fromShoppingList.AppState>
   ) {}
 
   ngOnInit(): void {
@@ -32,16 +34,11 @@ export class RecipeDetailComponent implements OnInit {
   }
 
   addIngredients() {
-    this.recipe.ingredients.map((ingredient: Ingredient) => {
-      this.shoppingListService.addIngredient(
-        ingredient.name,
-        ingredient.amount
-      );
-    });
+    this.store.dispatch(new SLActions.AddIngredients(this.recipe.ingredients));
   }
 
-  deleteRecipe(){
+  deleteRecipe() {
     this.recipeService.deleteRecipe(this.id);
-    this.router.navigate(['..'], {relativeTo: this.route})
+    this.router.navigate(['..'], { relativeTo: this.route });
   }
 }
