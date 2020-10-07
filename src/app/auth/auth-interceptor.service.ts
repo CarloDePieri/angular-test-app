@@ -5,18 +5,23 @@ import {
   HttpHandler,
   HttpParams,
 } from '@angular/common/http';
-import { AuthService } from './auth.service';
-import { take, exhaustMap } from 'rxjs/operators';
+import { take, exhaustMap, map } from 'rxjs/operators';
+import { Store } from '@ngrx/store';
+import * as fromApp from '../store/app.reducer';
 
 @Injectable()
 export class AuthInterceptorService implements HttpInterceptor {
-  constructor(private AS: AuthService) {}
+  constructor(private store: Store<fromApp.AppState>) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler) {
-    return this.AS.user.pipe(
+    // return this.AS.user.pipe(
+    return this.store.select('auth').pipe(
       // Wait for the first user, pass it along and unsubscribe
-      // Since user its a BehaviorSubject it will immediately return null or the last one
       take(1),
+      // Extract the user from the state
+      map((authState) => {
+        return authState.user;
+      }),
       // Pipe the user in, then replace the user observable with the one returned inside
       exhaustMap((user) => {
         if (user === null) {

@@ -6,11 +6,12 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { AuthService } from '../auth.service';
-import { Router } from '@angular/router';
 import { AlertComponent } from 'src/app/shared/alert/alert.component';
 import { PlaceholderDirective } from 'src/app/shared/placeholder.directive';
 import { Subscription } from 'rxjs';
+import { Store } from '@ngrx/store';
+import * as fromApp from 'src/app/store/app.reducer';
+import * as AuthActions from '../store/auth.actions';
 
 @Component({
   selector: 'app-auth',
@@ -25,18 +26,25 @@ export class AuthComponent implements OnInit, OnDestroy {
   @ViewChild(PlaceholderDirective, { static: false })
   alertHost: PlaceholderDirective;
   alertSub: Subscription;
+  storeSub: Subscription;
 
   constructor(
     private fb: FormBuilder,
-    private AS: AuthService,
-    private router: Router,
-    private cfr: ComponentFactoryResolver
+    private cfr: ComponentFactoryResolver,
+    private store: Store<fromApp.AppState>
   ) {}
 
   ngOnInit(): void {
     this.credForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
+    });
+    this.storeSub = this.store.select('auth').subscribe((state) => {
+      this.isLoading = state.loading;
+      this.error = state.authError;
+      if (this.error) {
+        this.showErrorAlert(this.error);
+      }
     });
   }
 
@@ -68,40 +76,20 @@ export class AuthComponent implements OnInit, OnDestroy {
     if (!this.credForm.valid) {
       return;
     }
-    this.isLoading = true;
-
     const credentials = this.credForm.value;
-
     if (this.isLoginMode) {
-      this.AS.logIn(credentials).subscribe(
-        (data) => {
-          this.isLoading = false;
-          this.router.navigate(['/recipes']);
-        },
-        (errorMessage) => {
-          this.isLoading = false;
-          this.error = errorMessage;
-          this.showErrorAlert(errorMessage);
-        }
-      );
+      this.store.dispatch(new AuthActions.LoginStart(credentials));
     } else {
-      this.AS.signUp(credentials).subscribe(
-        (data) => {
-          this.isLoading = false;
-          this.router.navigate(['/recipes']);
-        },
-        (errorMessage) => {
-          this.isLoading = false;
-          this.error = errorMessage;
-          this.showErrorAlert(errorMessage);
-        }
-      );
+      this.store.dispatch(new AuthActions.SignUpStart(credentials));
     }
   }
 
   ngOnDestroy() {
     if (this.alertSub) {
       this.alertSub.unsubscribe();
+    }
+    if (this.storeSub) {
+      this.storeSub.unsubscribe();
     }
   }
 }
