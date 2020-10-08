@@ -21,7 +21,7 @@ export function authReducer(
     case actions.AUTHENTICATE_SUCCESS:
       return {
         ...state,
-        user: action.payload,
+        user: action.payload.user,
         authError: null,
         loading: false,
       };

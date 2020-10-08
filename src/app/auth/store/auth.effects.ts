@@ -46,8 +46,10 @@ export class AuthEffects {
   authSuccessRedirect = this.actions$.pipe(
     // Activate this at AUTHENTICATE_SUCCESS, the final stage of successful login and signup processes
     ofType(AuthActions.AUTHENTICATE_SUCCESS),
-    tap(() => {
-      this.router.navigate(['/']);
+    tap((action: AuthActions.AuthenticateSuccess) => {
+      if (action.payload.redirect) {
+        this.router.navigate(['/']);
+      }
     })
   );
 
@@ -85,7 +87,10 @@ export class AuthEffects {
         new Date(userData._tokenExpirationDate).getTime() -
         new Date().getTime();
       this.authService.setLogoutTimer(expiresIn);
-      return new AuthActions.Authenticate(user);
+      return new AuthActions.AuthenticateSuccess({
+        user: user,
+        redirect: false,
+      });
     })
   );
 
@@ -135,7 +140,7 @@ export class AuthEffects {
     );
     localStorage.setItem('userData', JSON.stringify(user));
     this.authService.setLogoutTimer(+respData.expiresIn * 1000);
-    return new AuthActions.Authenticate(user);
+    return new AuthActions.AuthenticateSuccess({ user: user, redirect: true });
   }
 
   private handleHttpAuthFail(

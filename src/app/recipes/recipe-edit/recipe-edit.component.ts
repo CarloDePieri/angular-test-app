@@ -9,6 +9,12 @@ import {
 } from '@angular/forms';
 import { RecipeService } from '../recipe.service';
 import { Ingredient } from 'src/app/shared/ingredient.model';
+import * as fromApp from '../../store/app.reducer';
+import * as RecipesActions from '../store/recipes.actions';
+import { Store } from '@ngrx/store';
+import { switchMap, map } from 'rxjs/operators';
+import { Recipe } from '../recipe.model';
+import * as fromRecipes from '../store/recipes.reducer';
 
 @Component({
   selector: 'app-recipe-edit',
@@ -25,7 +31,8 @@ export class RecipeEditComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private fb: FormBuilder,
-    private RS: RecipeService
+    private RS: RecipeService,
+    private store: Store<fromApp.AppState>
   ) {}
 
   ngOnInit(): void {
@@ -38,26 +45,54 @@ export class RecipeEditComponent implements OnInit {
       description: ['', Validators.required],
       ingredients: this.fb.array([]),
     });
-    this.route.params.subscribe((params: Params) => {
-      this.id = +params['id'];
-      this.editMode = params['id'] != null;
-      if (this.editMode) {
-        const recipe = this.RS.getRecipe(this.id);
-        const recipeData = {
-          name: recipe.name,
-          description: recipe.description,
-          imagePath: recipe.imagePath,
-          ingredients: recipe.ingredients.map((ingredient: Ingredient) => {
-            this.addIngredientInput();
-            return {
-              name: ingredient.name,
-              amount: ingredient.amount,
-            };
-          }),
-        };
-        this.editForm.setValue(recipeData);
-      }
-    });
+    function getRecipeFromState(
+      state: fromRecipes.State,
+      index: number
+    ): Recipe {
+      return state.recipes.find((_, i) => {
+        return index === i;
+      });
+    }
+    this.route.params
+      .pipe(
+        map((params: Params) => {
+          this.id = +params['id'];
+          this.editMode = params['id'] != null;
+          return params;
+        }),
+        switchMap(() => {
+          // transform the observable into a store one
+          return this.store.select('recipes');
+        }),
+        map((state: fromRecipes.State) => {
+          return getRecipeFromState(state, this.id);
+        })
+      )
+      .subscribe((recipe: Recipe) => {
+        if (this.editMode) {
+          // prepare the form ingredients fields when needed
+          if (
+            this.editForm.controls.ingredients.value.length <
+            recipe.ingredients.length
+          ) {
+            recipe.ingredients.forEach((_) => {
+              this.addIngredientInput();
+            });
+          }
+          const recipeData = {
+            name: recipe.name,
+            description: recipe.description,
+            imagePath: recipe.imagePath,
+            ingredients: recipe.ingredients.map((ingredient: Ingredient) => {
+              return {
+                name: ingredient.name,
+                amount: ingredient.amount,
+              };
+            }),
+          };
+          this.editForm.setValue(recipeData);
+        }
+      });
   }
 
   addIngredientInput() {
@@ -78,14 +113,13 @@ export class RecipeEditComponent implements OnInit {
   }
 
   onSubmit() {
+    const recipe = this.RS.newRecipeFromData(this.editForm.value);
     if (this.editMode) {
-      const recipe = this.RS.newRecipeFromData(this.editForm.value);
-      this.RS.updateRecipe(this.id, recipe);
-      this.router.navigate(['..'], { relativeTo: this.route });
+      this.store.dispatch(
+        new RecipesActions.UpdateRecipe({ index: this.id, recipe: recipe })
+      );
     } else {
-      this.RS.addRecipeFromData(this.editForm.value);
-      const lastId = this.RS.getRecipes().length - 1;
-      this.router.navigate(['..', lastId], { relativeTo: this.route });
+      this.store.dispatch(new RecipesActions.AddRecipe(recipe));
     }
   }
 
@@ -94,11 +128,13 @@ export class RecipeEditComponent implements OnInit {
   }
 
   invalidRecipeNameValidator(control: FormControl): { [s: string]: boolean } {
-    if (this.editMode && this.RS.getRecipe(this.id).name == control.value) {
+    const recipes = this.RS.getRecipes();
+    const recipe = recipes[this.id];
+    if (this.editMode && recipe.name == control.value) {
       // Allow a recipe to keep its own name
       return null;
     }
-    const l = this.RS.getRecipes().filter((recipe) => {
+    const l = recipes.filter((recipe) => {
       return control.value == recipe.name;
     });
     if (l.length > 0) {

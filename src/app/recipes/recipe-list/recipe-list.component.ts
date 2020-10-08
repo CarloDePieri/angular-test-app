@@ -1,14 +1,10 @@
-import {
-  Component,
-  OnInit,
-  Output,
-  EventEmitter,
-  OnDestroy,
-} from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Recipe } from '../recipe.model';
-import { RecipeService } from '../recipe.service';
 import { Subscription } from 'rxjs';
-import { DataStorageService } from 'src/app/shared/data-storage.service';
+import { Store } from '@ngrx/store';
+import * as fromApp from '../../store/app.reducer';
+import * as RecipesActions from '../store/recipes.actions';
+import { RecipeService } from '../recipe.service';
 
 @Component({
   selector: 'app-recipe-list',
@@ -18,23 +14,29 @@ import { DataStorageService } from 'src/app/shared/data-storage.service';
 export class RecipeListComponent implements OnInit, OnDestroy {
   recipes: Recipe[];
   recipesChanged: Subscription;
+  recipeSub: Subscription;
 
   constructor(
-    private recipeService: RecipeService,
-    private DSS: DataStorageService
+    private store: Store<fromApp.AppState>,
+    private RS: RecipeService
   ) {}
 
   ngOnInit(): void {
-    // this.recipes = this.recipeService.getRecipes();
-    this.DSS.fetchRecipes().subscribe();
-    this.recipesChanged = this.recipeService.recipeListChanged.subscribe(
-      (recipes: Recipe[]) => {
-        this.recipes = recipes;
+    // Auto download the recipes if needed
+    this.RS.doWithCurrentRecipeState((state) => {
+      if (!state.recipes) {
+        this.store.dispatch(new RecipesActions.FetchRecipes());
       }
-    );
+    });
+    // Load the recipes from the state once downloaded
+    this.recipeSub = this.store.select('recipes').subscribe((state) => {
+      this.recipes = state.recipes;
+    });
   }
 
   ngOnDestroy(): void {
-    this.recipesChanged.unsubscribe();
+    if (this.recipeSub) {
+      this.recipeSub.unsubscribe();
+    }
   }
 }
