@@ -13,7 +13,7 @@
     "build:ssr": "ng build --prod && ng run first-app:server:production",
     "prerender": "ng run first-app:prerender",
     "build:http-server": "ng build --prod && http-server dist/first-app/browser -p 4201 --proxy http://localhost:4201\\?",
-    "clean dist": "rm -rf dist"
+    "clean": "rm -rf dist"
   },
   "private": true,
   "dependencies": {

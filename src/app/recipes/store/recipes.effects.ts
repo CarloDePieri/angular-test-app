@@ -40,7 +40,7 @@ export class RecipesEffects {
       return new RecipesActions.SetRecipes(recipes);
     }),
     catchError((error) => {
-      return of();
+      return of(new RecipesActions.FetchRecipesFailed());
     })
   );
 
