@@ -75,13 +75,15 @@ export class AuthEffects {
         _tokenExpirationDate: string;
       } = JSON.parse(localStorage.getItem('userData'));
       if (!userData) {
-        return { type: 'DUMMY' };
+        // return { type: 'DUMMY' };
+        return new AuthActions.AuthenticateNoLocalData();
       }
       const date = new Date(userData._tokenExpirationDate);
       const user = new User(userData.email, userData.id, userData._token, date);
       if (!user.token) {
         // Should try to refresh here!
-        return { type: 'DUMMY' };
+        // return { type: 'DUMMY' };
+        return new AuthActions.AuthenticateNoLocalData();
       }
       const expiresIn =
         new Date(userData._tokenExpirationDate).getTime() -

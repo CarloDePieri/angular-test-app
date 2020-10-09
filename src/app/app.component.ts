@@ -1,24 +1,10 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
-import { Store } from '@ngrx/store';
-import * as fromApp from './store/app.reducer';
-import * as AuthActions from './auth/store/auth.actions';
-import { isPlatformBrowser } from '@angular/common';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
-export class AppComponent implements OnInit {
-  constructor(
-    private store: Store<fromApp.AppState>,
-    @Inject(PLATFORM_ID) private platformId
-  ) {}
-
-  ngOnInit() {
-    if (isPlatformBrowser(this.platformId)) {
-      // be sure that this gets executed only when running on browser
-      this.store.dispatch(new AuthActions.AutoLogin());
-    }
-  }
+export class AppComponent {
+  constructor() {}
 }

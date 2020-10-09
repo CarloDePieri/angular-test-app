@@ -4,6 +4,7 @@ import { User } from '../auth/user.model';
 export const LOGIN_START = '[Auth] Login Start';
 export const AUTHENTICATE_FAIL = '[Auth] Authenticate Fail';
 export const AUTHENTICATE_SUCCESS = '[Auth] Authenticate Success';
+export const AUTHENTICATE_NO_LOCAL_DATA = '[Auth] Authenticate No Local Data';
 export const SIGNUP_START = '[Auth] SignUp Start';
 export const LOGOUT = '[Auth] Logout';
 export const CLEAR_ERROR = '[Auth] Clear Error';
@@ -12,6 +13,11 @@ export const AUTO_LOGIN = '[Auth] Auto Login';
 export class AuthenticateSuccess implements Action {
   readonly type = AUTHENTICATE_SUCCESS;
   constructor(public payload: { user: User; redirect: boolean }) {}
+}
+
+export class AuthenticateNoLocalData implements Action {
+  readonly type = AUTHENTICATE_NO_LOCAL_DATA;
+  constructor() {}
 }
 
 export class AutoLogin implements Action {
@@ -47,6 +53,7 @@ export class ClearError implements Action {
 export type AuthActions =
   | AutoLogin
   | AuthenticateSuccess
+  | AuthenticateNoLocalData
   | Logout
   | LoginStart
   | AuthenticateFail
