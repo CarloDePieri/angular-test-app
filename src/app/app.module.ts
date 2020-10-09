@@ -15,6 +15,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { AuthEffects } from './auth/store/auth.effects';
 import { environment } from 'src/environments/environment';
 import { RecipesEffects } from './recipes/store/recipes.effects';
+import { ServiceWorkerModule } from '@angular/service-worker';
 
 @NgModule({
   declarations: [AppComponent, HeaderComponent],
@@ -27,6 +28,7 @@ import { RecipesEffects } from './recipes/store/recipes.effects';
     StoreDevtoolsModule.instrument({ logOnly: environment.production }),
     EffectsModule.forRoot([AuthEffects, RecipesEffects]),
     StoreRouterConnectingModule.forRoot(),
+    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
   ],
   providers: [
     {
