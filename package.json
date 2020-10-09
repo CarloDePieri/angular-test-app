@@ -11,7 +11,9 @@
     "dev:ssr": "ng run first-app:serve-ssr",
     "serve:ssr": "node dist/first-app/server/main.js",
     "build:ssr": "ng build --prod && ng run first-app:server:production",
-    "prerender": "ng run first-app:prerender"
+    "prerender": "ng run first-app:prerender",
+    "build:http-server": "ng build --prod && http-server dist/first-app/browser -p 4201 --proxy http://localhost:4201\\?",
+    "clean dist": "rm -rf dist"
   },
   "private": true,
   "dependencies": {
@@ -45,6 +47,7 @@
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "^12.11.1",
     "codelyzer": "^6.0.0",
+    "http-server": "^0.12.3",
     "jasmine-core": "~3.6.0",
     "jasmine-spec-reporter": "~5.0.0",
     "karma": "~5.0.0",
